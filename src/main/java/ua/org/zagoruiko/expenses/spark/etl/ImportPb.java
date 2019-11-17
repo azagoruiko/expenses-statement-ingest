@@ -12,13 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import scala.Tuple2;
+import scala.Tuple1;
 import ua.org.zagoruiko.expenses.category.matcher.Matcher;
 import ua.org.zagoruiko.expenses.category.model.Tag;
-import ua.org.zagoruiko.expenses.category.model.TransactionMetadata;
+import ua.org.zagoruiko.expenses.matcherservice.service.MatcherService;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,6 +29,7 @@ import static org.apache.spark.sql.functions.*;
 
 @Component
 @PropertySource(value = "classpath:application.properties")
+@ComponentScan({"ua.org.zagoruiko.expenses.spark.etl", "ua.org.zagoruiko.expenses.matcherservice"})
 public class ImportPb implements Serializable {
     public static final long serialVersionUID = 0L;
 
@@ -59,9 +61,9 @@ public class ImportPb implements Serializable {
     @Value("${s3.secret.key}")
     private String s3SecretKey;
 
+
     @Autowired
-    @Qualifier("pb_matcher")
-    private Matcher pbMatcher;
+    public MatcherService matcherService;
 
     private static Column cleanNonPrintable(Column col) {
         return regexp_replace(trim(col), "[^\\x00-\\x7F]+", "");
@@ -80,14 +82,10 @@ public class ImportPb implements Serializable {
     }
 
     public void run(String[] args) throws Exception {
-        UDF3<String, String, String, Tuple2<String, String>> detectCategory =
+        UDF3<String, String, String, Tuple1<String>> detectCategory =
                 (provider, category, operation) -> {
-                    Map<String, String> record = new HashMap<>();
-                    record.put("category", category);
-                    record.put("operation", operation);
-                    TransactionMetadata data = this.pbMatcher.metadata(record);
-                    return new Tuple2<>(data.getCategory(), String.join(",", data.getTags().stream()
-                            .map(x -> x.getName()).collect(Collectors.toList())));
+                    List<String> data = this.matcherService.matchTags(operation);
+                    return new Tuple1<>(String.join(",", data));
                 };
 
         SparkSession spark = SparkSession
@@ -98,10 +96,9 @@ public class ImportPb implements Serializable {
         spark.conf().set("spark.executor.userClassPathFirst", "true");
 
         List<StructField> fields = new ArrayList<>();
-        fields.add(DataTypes.createStructField("category", DataTypes.StringType, false));
         fields.add(DataTypes.createStructField("tags", DataTypes.StringType, false));
         DataType schema = DataTypes.createStructType(fields);
-        spark.sqlContext().udf().register("category_match", detectCategory, schema);
+        spark.sqlContext().udf().register("tags_match", detectCategory, schema);
 
         SparkContext sparkContext = spark.sparkContext();
         JavaSparkContext jsc = new JavaSparkContext(sparkContext);
@@ -130,9 +127,8 @@ public class ImportPb implements Serializable {
                         .cast(DataTypes.FloatType))
                 .withColumn("amount", col("amount_clean").cast(DataTypes.FloatType))
                 .withColumn("raw_category", trim(col("Категория")))
-                .withColumn("transaction", callUDF("category_match", lit("pb"), col("raw_category"), col("operation")))
-                .select(col("transaction.category").as("category"),
-                        col("transaction.tags").as("tags"),
+                .withColumn("transaction", callUDF("tags_match", lit("pb"), col("raw_category"), col("operation")))
+                .select(col("transaction.tags").as("tags"),
                         trim(col("Категория")).as("raw_category"),
                         col("operation"),
                         col("Дата").as("date"),
@@ -142,10 +138,10 @@ public class ImportPb implements Serializable {
                         col("amount"));
         ds.write()
                 .mode(SaveMode.Overwrite)
-                .partitionBy("category").option("path", "s3a://buq/pb_normalized.parq")
+                .partitionBy("tags").option("path", "s3a://buq/pb_normalized.parq")
                 .saveAsTable("pb_normalized");
 
-        ds.select(col("category"),
+        ds.select(
                 concat_ws(" ", col("date"), col("time")).as("transaction_time"),
                 col("amount"),
                 col("amount_orig"),

@@ -19,7 +19,7 @@ export S3_SECRET_KEY=$(consul kv get expenses/object/storage/fs.s3a.secret.key)
   --master nomad \
   --deploy-mode client \
   --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:test${VER}" \
-  --conf spark.executor.instances=4 \
+  --conf spark.executor.instances=3 \
   --conf spark.nomad.datacenters=home \
   --conf spark.nomad.sparkDistribution=local:/opt/spark \
   --conf spark.executor.userClassPathFirst=true \
