@@ -147,7 +147,6 @@ public class ImportPb implements Serializable {
         ds.write()
                 .mode(SaveMode.Overwrite)
                 .partitionBy("category").option("path", "s3a://buq/pb_normalized.parq")
-                .option("mode", "overwrite")
                 .saveAsTable("pb_normalized");
 
         ds.select(col("category"),
@@ -165,7 +164,6 @@ public class ImportPb implements Serializable {
                 .repartition(1)
                 .write().mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .option("mode", "overwrite")
                 .csv("s3a://buq/pb_normalized.csv");
         spark.stop();
     }
