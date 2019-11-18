@@ -24,15 +24,17 @@
         </dependency>
 
         <dependency>
-            <groupId>ua.org.zagoruiko.expenses</groupId>
-            <artifactId>attribute-matcher-retrofit-client</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.0.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-jackson</artifactId>
-            <version>2.0.0</version>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.0.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->

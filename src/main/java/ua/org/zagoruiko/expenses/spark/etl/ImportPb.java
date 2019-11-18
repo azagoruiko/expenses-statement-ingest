@@ -8,19 +8,25 @@ import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.type.TypeReference;
+import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import scala.Tuple2;
 import ua.org.zagoruiko.expenses.category.matcher.Matcher;
-import ua.org.zagoruiko.expenses.category.model.Tag;
-import ua.org.zagoruiko.expenses.category.model.TransactionMetadata;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,10 +65,6 @@ public class ImportPb implements Serializable {
     @Value("${s3.secret.key}")
     private String s3SecretKey;
 
-    @Autowired
-    @Qualifier("pb_matcher")
-    private Matcher pbMatcher;
-
     private static Column cleanNonPrintable(Column col) {
         return regexp_replace(trim(col), "[^\\x00-\\x7F]+", "");
     }
@@ -82,17 +84,19 @@ public class ImportPb implements Serializable {
     public void run(String[] args) throws Exception {
         UDF3<String, String, String, Tuple2<String, String>> detectCategory =
                 (provider, category, operation) -> {
-                    Map<String, String> record = new HashMap<>();
-                    record.put("category", category);
-                    record.put("operation", operation);
-                    TransactionMetadata data = this.pbMatcher.metadata(record);
-                    return new Tuple2<>(data.getCategory(), String.join(",", data.getTags().stream()
-                            .map(x -> x.getName()).collect(Collectors.toList())));
+                    ClientConfig cfg = new ClientConfig();
+                    cfg.register(JacksonJsonProvider.class);
+                    Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
+                    WebTarget target = client.target("http://192.168.0.101:8080/matchers/match")
+                            .queryParam("text", operation);
+                    Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
+                    List<String> data = Arrays.asList(ib.get( String[].class));
+                    return new Tuple2<>("UNKNOWN", String.join(",", data));
                 };
 
         SparkSession spark = SparkSession
                 .builder()
-                .appName("S3MinioReader")
+                .appName("PB_Statement_CSV_Ingest")
                 .getOrCreate();
 
         spark.conf().set("spark.executor.userClassPathFirst", "true");
@@ -143,6 +147,7 @@ public class ImportPb implements Serializable {
         ds.write()
                 .mode(SaveMode.Overwrite)
                 .partitionBy("category").option("path", "s3a://buq/pb_normalized.parq")
+                .option("mode", "overwrite")
                 .saveAsTable("pb_normalized");
 
         ds.select(col("category"),
@@ -152,7 +157,7 @@ public class ImportPb implements Serializable {
                 col("operation"),
                 col("tags"))
                 .write()
-                .mode(SaveMode.Overwrite)
+                .mode(SaveMode.Append)
                 .jdbc(this.jdbcUrl, this.jdbcTable, jdbcProperties);
 
         spark.table("pb_normalized")
@@ -160,6 +165,7 @@ public class ImportPb implements Serializable {
                 .repartition(1)
                 .write().mode(SaveMode.Overwrite)
                 .option("header", "true")
+                .option("mode", "overwrite")
                 .csv("s3a://buq/pb_normalized.csv");
         spark.stop();
     }
