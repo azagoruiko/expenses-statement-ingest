@@ -20,6 +20,12 @@
         <dependency>
             <groupId>ua.org.zagoruiko.expenses</groupId>
             <artifactId>expenses-category-match-lib</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ua.org.zagoruiko.expenses</groupId>
+            <artifactId>matcher-service-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

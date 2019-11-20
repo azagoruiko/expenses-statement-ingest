@@ -3,6 +3,7 @@ package ua.org.zagoruiko.expenses.spark.etl.writer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
+import org.apache.spark.sql.functions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.util.Properties;
 
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.concat_ws;
 
 @Component("jdbcWriter")
 public class JdbcStatementWriter implements StatementWriter {
@@ -41,7 +41,7 @@ public class JdbcStatementWriter implements StatementWriter {
         jdbcProperties.setProperty("user", this.jdbcUser);
         jdbcProperties.setProperty("password", this.jdbcPassword);
         dataset.select(col("category"),
-                concat_ws(" ", col("date"), col("time")).as("transaction_time"),
+                functions.concat_ws(" ", col("date"), col("time")).as("transaction_time"),
                 col("amount"),
                 col("amount_orig"),
                 col("operation"),

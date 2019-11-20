@@ -1,9 +1,6 @@
 package ua.org.zagoruiko.expenses.spark.etl.loader;
 
-import org.apache.spark.sql.Column;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
@@ -23,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.spark.sql.functions.*;
+import static org.apache.spark.sql.functions.callUDF;
+import static org.apache.spark.sql.functions.lit;
+import static org.apache.spark.sql.functions.regexp_replace;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.trim;
 
@@ -71,13 +70,13 @@ public class PbTaggedStatementLoader implements StatementLoader {
                 .option("escape", "\"")
                 .option("header", "true")
                 .load("s3a://raw.pb.statements/*.csv")
-                .withColumn("operation", col("Карта"))
+                .withColumn("account", col("Карта"))
                 .withColumn("operation", col("Описание операции"))
                 .withColumn("amount_clean", cleanFloat(col("Сумма в валюте карты"))
                         .cast(DataTypes.FloatType))
                 .withColumn("amount", col("amount_clean").cast(DataTypes.FloatType))
                 .withColumn("raw_category", trim(col("Категория")))
-                .withColumn("transaction", callUDF("category_match", lit("pb"), col("raw_category"), col("operation")))
+                .withColumn("transaction", functions.callUDF("category_match", lit("pb"), col("raw_category"), col("operation")))
                 .select(col("transaction.category").as("category"),
                         col("transaction.tags").as("tags"),
                         trim(col("Категория")).as("raw_category"),
