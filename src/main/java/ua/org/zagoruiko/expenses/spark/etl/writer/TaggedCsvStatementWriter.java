@@ -12,6 +12,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scala.Tuple2;
 import ua.org.zagoruiko.expenses.category.matcher.Matcher;
@@ -33,14 +34,12 @@ import static org.apache.spark.sql.functions.col;
 
 @Component("taggedCsvWriter")
 public class TaggedCsvStatementWriter implements StatementWriter {
-    public TaggedCsvStatementWriter() {
-
-    }
+    @Autowired
+    private MatcherClient matcherClient;
 
     @Override
     public void write(Dataset<Row> dataset) {
-        MatcherClient client = new MatcherClient();
-        MatcherSetDTO matchers = client.getMatchers("pb");
+        MatcherSetDTO matchers = this.matcherClient.getMatchers("pb");
 
         Matcher<String> matcher = MatcherFatory.createMatcherFromDTO(matchers.getTagsMatcher(), "pb");
 

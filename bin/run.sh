@@ -14,12 +14,14 @@ export S3_ENDPOINT=$(consul kv get expenses/object/storage/fs.s3a.endpoint)
 export S3_ACCESS_KEY=$(consul kv get expenses/object/storage/fs.s3a.access.key)
 export S3_SECRET_KEY=$(consul kv get expenses/object/storage/fs.s3a.secret.key)
 
+export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_url)
+
 /opt/spark/bin/spark-submit \
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \
   --master nomad \
   --deploy-mode client \
   --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:test${VER}" \
-  --conf spark.executor.instances=4 \
+  --conf spark.executor.instances=3 \
   --conf spark.nomad.datacenters=home \
   --conf spark.nomad.sparkDistribution=local:/opt/spark \
   --conf spark.executor.userClassPathFirst=true \

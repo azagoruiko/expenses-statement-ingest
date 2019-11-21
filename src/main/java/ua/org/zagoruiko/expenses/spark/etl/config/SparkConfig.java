@@ -11,6 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +36,6 @@ public class SparkConfig {
                 .getOrCreate();
 
         spark.conf().set("spark.executor.userClassPathFirst", "true");
-
-
 
         SparkContext sparkContext = spark.sparkContext();
         JavaSparkContext jsc = new JavaSparkContext(sparkContext);

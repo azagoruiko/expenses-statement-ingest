@@ -6,6 +6,7 @@ import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.DataTypes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.org.zagoruiko.expenses.category.matcher.Matcher;
 import ua.org.zagoruiko.expenses.category.model.Tag;
@@ -22,11 +23,12 @@ import static org.apache.spark.sql.functions.col;
 
 @Component("taggedArrayWriter")
 public class TaggedArrayStatementWriter implements StatementWriter {
+    @Autowired
+    private MatcherClient matcherClient;
 
     @Override
     public void write(Dataset<Row> dataset) {
-        MatcherClient client = new MatcherClient();
-        MatcherSetDTO matchers = client.getMatchers("pb");
+        MatcherSetDTO matchers = this.matcherClient.getMatchers("pb");
 
         Matcher<String> matcher = MatcherFatory.createMatcherFromDTO(matchers.getTagsMatcher(), "pb");
 

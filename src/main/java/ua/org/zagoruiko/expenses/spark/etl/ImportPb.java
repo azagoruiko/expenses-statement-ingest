@@ -7,6 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ua.org.zagoruiko.expenses.spark.etl.loader.StatementLoader;
+import ua.org.zagoruiko.expenses.spark.etl.matcher.MatcherClient;
 import ua.org.zagoruiko.expenses.spark.etl.writer.StatementWriter;
 
 import java.io.Serializable;
@@ -65,9 +66,10 @@ public class ImportPb implements Serializable {
         //this.jdbcWriter.write(ds);
         //this.taggedWriter.write(ds);
 
-        //this.csvWriter.write(this.savedLoader.load());
-        //this.taggedCsvWriter.write(this.savedLoader.load());
-        this.taggedArrayWriter.write(this.savedLoader.load());
+        Dataset<Row> savedDs = this.savedLoader.load();
+        this.csvWriter.write(savedDs);
+        this.taggedCsvWriter.write(savedDs);
+        this.taggedArrayWriter.write(savedDs);
         spark.stop();
     }
 }
