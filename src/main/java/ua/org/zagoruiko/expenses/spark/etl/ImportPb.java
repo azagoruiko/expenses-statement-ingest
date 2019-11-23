@@ -26,6 +26,10 @@ public class ImportPb implements Serializable {
     private StatementLoader savedLoader;
 
     @Autowired
+    @Qualifier("savedArrayLoader")
+    private StatementLoader savedArrayLoader;
+
+    @Autowired
     @Qualifier("rawWriter")
     private StatementWriter rawWriter;
 
@@ -70,6 +74,7 @@ public class ImportPb implements Serializable {
         this.csvWriter.write(savedDs);
         this.taggedCsvWriter.write(savedDs);
         this.taggedArrayWriter.write(savedDs);
+        this.jdbcWriter.write(this.savedArrayLoader.load());
         spark.stop();
     }
 }

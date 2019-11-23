@@ -40,14 +40,18 @@ public class JdbcStatementWriter implements StatementWriter {
         jdbcProperties.setProperty("driver", this.jdbcDriver);
         jdbcProperties.setProperty("user", this.jdbcUser);
         jdbcProperties.setProperty("password", this.jdbcPassword);
-        dataset.select(col("category"),
-                functions.concat_ws(" ", col("date"), col("time")).as("transaction_time"),
+        dataset.select(col("id"),
+                col("date_time").as("transaction_date"),
                 col("amount"),
-                col("amount_orig"),
-                col("operation"),
-                col("tags"))
+                col("operation").as("description"))
                 .write()
-                .mode(SaveMode.Append)
+                .mode(SaveMode.Overwrite)
                 .jdbc(this.jdbcUrl, this.jdbcTable, jdbcProperties);
+
+        dataset.select(col("id").as("transaction_id"),
+                functions.explode(col("tags")).as("value"))
+                .write()
+                .mode(SaveMode.Overwrite)
+                .jdbc(this.jdbcUrl,"transaction_tags", jdbcProperties);
     }
 }
