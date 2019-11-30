@@ -54,7 +54,25 @@ public class PbRawStatementLoader implements StatementLoader {
 
     @Override
     public Dataset<Row> load() {
-        return spark.read()
+        Dataset<Row> ratesFile = spark.read()
+                .format("csv")
+                .option("quote", "\"")
+                .option("escape", "\"")
+                .option("header", "true")
+                .load("s3a://rates/*.csv");
+        ratesFile.registerTempTable("rates");
+        Dataset<Row> rates = this.spark.sql("SELECT\n" +
+                "          CASE WHEN `Назва валюти`='Євро (EUR)' THEN 'евро'\n" +
+                "               WHEN `Назва валюти`='Долар США (USD)' THEN 'долл'\n" +
+                "               WHEN `Назва валюти`='Російський рубль (RUB)' THEN 'руб'\n" +
+                "               ELSE 'грн'\n" +
+                "          END as currency,\n" +
+                "          (`Офіційний курс` / `Кількість одиниць`) as rate,\n" +
+                "          `Дата` as dt\n" +
+                "          from rates\n" +
+                "   ORDER BY dt"
+                );
+        Dataset<Row> data = spark.read()
                 .format("csv")
                 .option("quote", "\"")
                 .option("escape", "\"")
@@ -72,8 +90,9 @@ public class PbRawStatementLoader implements StatementLoader {
                 .select(functions.col("id"),
                         functions.col("date_time"),
                         functions.col("account"),
-                        functions.col("amount"),
+                        functions.col("amount").as("amount_currency"),
                         functions.col("operation"),
+                        functions.col("Валюта карты").as("currency1"),
                         functions.lit("pb"),
                         functions.col("Дата").as("date"),
                         functions.col("Время").as("time"),
@@ -82,5 +101,11 @@ public class PbRawStatementLoader implements StatementLoader {
                         functions.col("account_orig"),
                         functions.trim(functions.col("Категория")).as("raw_category")
                         ).dropDuplicates("id");
+        data = data.join( rates, data.col("date").equalTo(rates.col("dt"))
+                .and(rates.col("currency").equalTo(data.col("currency1"))), "left");
+        data.registerTempTable("joined");
+        return spark.sql("SELECT *, IF(joined.currency = 'долл' OR joined.currency = 'евро', " +
+                "(amount_currency * rate), amount_currency) as amount " +
+                "FROM joined");
     }
 }

@@ -44,6 +44,7 @@ public class SavedPbStatementLoader implements StatementLoader {
                         "raw_category",
                         "amount_clean",
                         "amount_orig",
+                        "amount_currency",
                         "account_orig");
     }
 }
