@@ -38,6 +38,10 @@ public class ImportPb implements Serializable {
     private StatementWriter jdbcWriter;
 
     @Autowired
+    @Qualifier("pgJdbcWriter")
+    private StatementWriter pgJdbcWriter;
+
+    @Autowired
     @Qualifier("csvWriter")
     private StatementWriter csvWriter;
 
@@ -75,6 +79,7 @@ public class ImportPb implements Serializable {
         this.taggedCsvWriter.write(savedDs);
         this.taggedArrayWriter.write(savedDs);
         this.jdbcWriter.write(this.savedArrayLoader.load());
+        this.pgJdbcWriter.write(this.savedArrayLoader.load());
         spark.stop();
     }
 }

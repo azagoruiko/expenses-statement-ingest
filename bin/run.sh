@@ -10,6 +10,11 @@ export JDBC_DRIVER=$(consul kv get jdbc.driver)
 export JDBC_USER=$(consul kv get jdbc.user)
 export JDBC_PASSWORD=$(consul kv get jdbc.password)
 
+export POSTGRES_JDBC_URL=$(consul kv get postgres.jdbc.url)
+export POSTGRES_JDBC_DRIVER=$(consul kv get postgres.jdbc.driver)
+export POSTGRES_JDBC_USER=$(consul kv get postgres.jdbc.user)
+export POSTGRES_JDBC_PASSWORD=$(consul kv get postgres.jdbc.password)
+
 export S3_ENDPOINT=$(consul kv get expenses/object/storage/fs.s3a.endpoint)
 export S3_ACCESS_KEY=$(consul kv get expenses/object/storage/fs.s3a.access.key)
 export S3_SECRET_KEY=$(consul kv get expenses/object/storage/fs.s3a.secret.key)
