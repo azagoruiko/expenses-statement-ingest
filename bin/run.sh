@@ -22,6 +22,8 @@ export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_ur
   --deploy-mode client \
   --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:test${VER}" \
   --conf spark.executor.instances=3 \
+  --conf spark.cores.max=6 \
+  --conf spark.sql.shuffle.partitions=8 \
   --conf spark.nomad.datacenters=home \
   --conf spark.nomad.sparkDistribution=local:/opt/spark \
   --conf spark.executor.userClassPathFirst=true \
