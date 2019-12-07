@@ -11,11 +11,18 @@ import ua.org.zagoruiko.expenses.spark.etl.matcher.MatcherClient;
 import ua.org.zagoruiko.expenses.spark.etl.writer.StatementWriter;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Component
 @PropertySource(value = "classpath:application.properties")
 public class ImportPb implements Serializable {
     public static final long serialVersionUID = 0L;
+
+    @Autowired
+    Map<String, StatementLoader> loaders;
+
+    @Autowired
+    Map<String, StatementWriter> writers;
 
     @Autowired
     @Qualifier("rawLoader")
@@ -67,7 +74,7 @@ public class ImportPb implements Serializable {
         context.getBean(ImportPb.class).run(args);
     }
 
-    public void run(String[] args) throws Exception {
+    public void v1() {
         Dataset<Row> ds = this.loader.load();
 
         this.rawWriter.write(ds);
@@ -81,5 +88,25 @@ public class ImportPb implements Serializable {
         this.jdbcWriter.write(this.savedArrayLoader.load());
         this.pgJdbcWriter.write(this.savedArrayLoader.load());
         spark.stop();
+    }
+
+    public void v2() {
+        Dataset<Row> ds = this.loaders.get("alfaRawLoader").load();
+        ds = ds.union(this.loader.load());
+        this.rawWriter.write(ds);
+        //this.jdbcWriter.write(ds);
+        //this.taggedWriter.write(ds);
+
+        Dataset<Row> savedDs = this.savedLoader.load();
+        this.csvWriter.write(savedDs);
+        this.taggedCsvWriter.write(savedDs);
+        this.taggedArrayWriter.write(savedDs);
+        this.jdbcWriter.write(this.savedArrayLoader.load());
+        this.pgJdbcWriter.write(this.savedArrayLoader.load());
+        spark.stop();
+    }
+
+    public void run(String[] args) throws Exception {
+        v2();
     }
 }

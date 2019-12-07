@@ -45,4 +45,10 @@ public class MatcherClient {
         Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
         return ib.get( MatcherSetDTO.class);
     }
+
+    public MatcherSetDTO getMatchers() {
+        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/matchers/");
+        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
+        return ib.get( MatcherSetDTO.class);
+    }
 }

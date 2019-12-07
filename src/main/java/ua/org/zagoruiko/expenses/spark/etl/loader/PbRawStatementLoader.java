@@ -106,6 +106,21 @@ public class PbRawStatementLoader implements StatementLoader {
         data.registerTempTable("joined");
         return spark.sql("SELECT *, IF(joined.currency = 'долл' OR joined.currency = 'евро', " +
                 "(amount_currency * rate), amount_currency) as amount " +
-                "FROM joined");
+                "FROM joined").select(
+                functions.col("id"),
+                functions.col("date_time"),
+                functions.col("account"),
+                functions.col("amount"),
+                functions.col("operation"),
+                functions.col("currency"),
+                functions.lit("pb").as("source"),
+                functions.col("date"),
+                functions.col("time"),
+                functions.col("amount_orig"),
+                functions.col("amount_clean"),
+                functions.col("amount_currency"),
+                functions.col("account_orig"),
+                functions.col("raw_category")
+        );
     }
 }

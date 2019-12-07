@@ -35,6 +35,7 @@ public class SavedPbStatementLoader implements StatementLoader {
     public Dataset<Row> load() {
         return this.spark.table("pb_normalized")
                 .select("id",
+                        "source",
                         "account",
                         "date_time",
                         "amount",
