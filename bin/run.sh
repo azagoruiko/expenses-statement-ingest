@@ -25,7 +25,7 @@ export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_ur
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \
   --master nomad \
   --deploy-mode client \
-  --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:test${VER}" \
+  --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:${VER}" \
   --conf spark.executor.instances=3 \
   --conf spark.cores.max=6 \
   --conf spark.sql.shuffle.partitions=8 \
@@ -33,5 +33,5 @@ export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_ur
   --conf spark.nomad.sparkDistribution=local:/opt/spark \
   --conf spark.executor.userClassPathFirst=true \
   --conf spark.driver.userClassPathFirst=true \
-  --jars /opt/spark/jars/gson-2.8.5.jar \
+  --jars local:/opt/spark/jars/gson-2.8.5.jar \
   local:/app/sparkjob.jar
