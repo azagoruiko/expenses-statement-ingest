@@ -20,6 +20,7 @@ export S3_ACCESS_KEY=$(consul kv get expenses/object/storage/fs.s3a.access.key)
 export S3_SECRET_KEY=$(consul kv get expenses/object/storage/fs.s3a.secret.key)
 
 export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_url)
+export SERVICE_GOALS_BASE_URL=$(consul kv get telegram/bot/accounter/goals.base.url)
 
 /opt/spark/bin/spark-submit \
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \

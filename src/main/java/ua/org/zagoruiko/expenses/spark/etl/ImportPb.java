@@ -7,6 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ua.org.zagoruiko.expenses.spark.etl.loader.StatementLoader;
+import ua.org.zagoruiko.expenses.spark.etl.matcher.GoalsClient;
 import ua.org.zagoruiko.expenses.spark.etl.matcher.MatcherClient;
 import ua.org.zagoruiko.expenses.spark.etl.writer.StatementWriter;
 
@@ -17,6 +18,9 @@ import java.util.Map;
 @PropertySource(value = "classpath:application.properties")
 public class ImportPb implements Serializable {
     public static final long serialVersionUID = 0L;
+
+    @Autowired
+    GoalsClient goalsClient;
 
     @Autowired
     Map<String, StatementLoader> loaders;
@@ -108,5 +112,6 @@ public class ImportPb implements Serializable {
 
     public void run(String[] args) throws Exception {
         v2();
+        this.goalsClient.notifyGoals();
     }
 }
