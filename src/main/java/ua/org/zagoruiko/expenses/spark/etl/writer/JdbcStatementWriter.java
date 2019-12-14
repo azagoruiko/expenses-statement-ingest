@@ -4,6 +4,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.functions;
+import org.apache.spark.sql.types.DataTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,7 @@ public class JdbcStatementWriter implements StatementWriter {
         jdbcProperties.setProperty("driver", this.jdbcDriver);
         jdbcProperties.setProperty("user", this.jdbcUser);
         jdbcProperties.setProperty("password", this.jdbcPassword);
+        jdbcProperties.setProperty("truncate", "true");
         dataset.select(col("id"),
                 col("date_time").as("transaction_date"),
                 col("amount"),
@@ -47,6 +49,7 @@ public class JdbcStatementWriter implements StatementWriter {
                 .write()
                 .mode(SaveMode.Overwrite)
                 .jdbc(this.jdbcUrl, this.jdbcTable, jdbcProperties);
+
 
         dataset.select(col("id").as("transaction_id"),
                 functions.explode(col("tags")).as("value"))

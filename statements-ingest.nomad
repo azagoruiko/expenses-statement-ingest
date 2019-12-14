@@ -3,7 +3,7 @@ job "statements-ingest" {
   type        = "batch"
 
   periodic {
-    cron      = "0 2 * * * *"
+    cron      = "10 20 * * * *"
     prohibit_overlap = true
   }
 
@@ -26,7 +26,7 @@ EOH
         network_mode = "host"
         extra_hosts = ["nuc1:192.168.0.21", "nuc2:192.168.0.22", "nuc3:192.168.0.23", "master:192.168.0.10", "slave0:192.168.0.11"]
         privileged = true
-        image = "127.0.0.1:9999/docker/expenses-statement-ingest:0.0.2"
+        image = "127.0.0.1:9999/docker/expenses-statement-ingest:0.0.4"
         command = "bash"
         args = [
           "/app/run.sh",

@@ -40,6 +40,7 @@ public class PostgresStatementWriter implements StatementWriter {
         jdbcProperties.setProperty("driver", this.jdbcDriver);
         jdbcProperties.setProperty("user", this.jdbcUser);
         jdbcProperties.setProperty("password", this.jdbcPassword);
+        jdbcProperties.setProperty("truncate", "true");
         dataset.select(col("id"),
                 col("date_time").as("transaction_date"),
                 col("amount"),
