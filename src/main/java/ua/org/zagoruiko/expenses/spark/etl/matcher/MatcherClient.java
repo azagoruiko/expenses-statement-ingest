@@ -4,6 +4,7 @@ import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ua.org.zagoruiko.expenses.matcherservice.dto.CategoryTagDTO;
 import ua.org.zagoruiko.expenses.matcherservice.dto.MatcherSetDTO;
 import ua.org.zagoruiko.expenses.spark.etl.config.MatcherServiceConfig;
 
@@ -13,6 +14,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -46,5 +48,11 @@ public class MatcherClient {
         WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/matchers/");
         Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
         return ib.get( MatcherSetDTO.class);
+    }
+
+    public List<CategoryTagDTO> getCategoryTags() {
+        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/tags/categories");
+        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
+        return Arrays.asList(ib.get( CategoryTagDTO[].class));
     }
 }

@@ -45,7 +45,8 @@ public class PostgresStatementWriter implements StatementWriter {
                 col("date_time").as("transaction_date"),
                 col("amount"),
                 col("operation").as("description"),
-                col("tags"))
+                col("tags"),
+                col("category"))
                 .write()
                 .mode(SaveMode.Overwrite)
                 .jdbc(this.jdbcUrl, this.jdbcTable, jdbcProperties);

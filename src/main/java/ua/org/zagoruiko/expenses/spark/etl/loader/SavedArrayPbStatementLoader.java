@@ -29,6 +29,7 @@ public class SavedArrayPbStatementLoader implements StatementLoader {
                         "amount_clean",
                         "amount_orig",
                         "account_orig",
-                        "tags");
+                        "tags",
+                        "category");
     }
 }

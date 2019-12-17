@@ -45,7 +45,8 @@ public class JdbcStatementWriter implements StatementWriter {
         dataset.select(col("id"),
                 col("date_time").as("transaction_date"),
                 col("amount"),
-                col("operation").as("description"))
+                col("operation").as("description"),
+                col("category"))
                 .write()
                 .mode(SaveMode.Overwrite)
                 .jdbc(this.jdbcUrl, this.jdbcTable, jdbcProperties);
