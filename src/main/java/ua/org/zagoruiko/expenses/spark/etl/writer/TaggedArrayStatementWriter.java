@@ -16,10 +16,7 @@ import ua.org.zagoruiko.expenses.matcherservice.dto.MatcherSetDTO;
 import ua.org.zagoruiko.expenses.matcherservice.matcher.MatcherFatory;
 import ua.org.zagoruiko.expenses.spark.etl.matcher.MatcherClient;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +37,9 @@ public class TaggedArrayStatementWriter implements StatementWriter {
 
         UDF2<String, String, String[]> detectCategory =
                 (operation, source) -> {
+                    if (!matchers.containsKey(source)) {
+                        return new String[] {"OTHER"};
+                    }
                     Set<Tag> match = matchers.get(source).match(operation);
                     List<String> tags = match.stream().map(t -> t.getName()).collect(Collectors.toList());
                     return tags.toArray(new String[tags.size()]);

@@ -55,7 +55,7 @@ public class AlfaRawStatementLoader implements StatementLoader {
                 .withColumn("date_time", functions.callUDF("parseDateAlfa", functions.col("Дата операції")))
                 .withColumn("id", functions.callUDF("generateIdAlfa", functions.col("Дата операції"), functions.col("account"), functions.col("Сума")))
 
-                .select(//functions.lit("id").as("id"),
+                .select(
                         functions.col("id"),
                         functions.col("date_time"),
                         functions.col("account"),

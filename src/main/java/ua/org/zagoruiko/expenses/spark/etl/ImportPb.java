@@ -78,10 +78,12 @@ public class ImportPb implements Serializable {
         context.getBean(ImportPb.class).run(args);
     }
 
-    public void v1() {
-        Dataset<Row> ds = this.loader.load();
-
+    public void processAll() {
+        Dataset<Row> ds = this.loaders.get("alfaRawLoader").load();
+        ds = ds.union(this.loader.load());
+        ds = ds.union(this.loaders.get("spreadsheetsRawLoader").load());
         this.rawWriter.write(ds);
+
         //this.jdbcWriter.write(ds);
         //this.taggedWriter.write(ds);
 
@@ -94,24 +96,13 @@ public class ImportPb implements Serializable {
         spark.stop();
     }
 
-    public void v2() {
-        Dataset<Row> ds = this.loaders.get("alfaRawLoader").load();
-        ds = ds.union(this.loader.load());
-        this.rawWriter.write(ds);
-        //this.jdbcWriter.write(ds);
-        //this.taggedWriter.write(ds);
-
-        Dataset<Row> savedDs = this.savedLoader.load();
-        this.csvWriter.write(savedDs);
-        this.taggedCsvWriter.write(savedDs);
-        this.taggedArrayWriter.write(savedDs);
-        this.jdbcWriter.write(this.savedArrayLoader.load());
-        this.pgJdbcWriter.write(this.savedArrayLoader.load());
-        spark.stop();
+    public void dumpSpreadsheets() {
+        this.loaders.get("spreadsheetsStatementsRawLoader").load();
     }
 
     public void run(String[] args) throws Exception {
-        v2();
+        //dumpSpreadsheets();
+        processAll();
         this.goalsClient.notifyGoals();
     }
 }
