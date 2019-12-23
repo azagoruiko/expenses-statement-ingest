@@ -74,6 +74,6 @@ public class TaggedArrayStatementWriter implements StatementWriter {
                 .write()
                 .mode(SaveMode.Overwrite)
                 .partitionBy("account").option("path", "s3a://buq/pb_normalized.tagged.array.parq")
-                .saveAsTable("pb_normalized_array");;
+                .saveAsTable("pb_normalized_array");
     }
 }

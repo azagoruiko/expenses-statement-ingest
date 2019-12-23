@@ -10,6 +10,7 @@ export JDBC_DRIVER=$(consul kv get jdbc.driver)
 export JDBC_USER=$(consul kv get jdbc.user)
 export JDBC_PASSWORD=$(consul kv get jdbc.password)
 
+export POSTGRES_METASTORE_JDBC_URL=$(consul kv get hive.postgres.metastore.jdbc.url)
 export POSTGRES_JDBC_URL=$(consul kv get postgres.jdbc.url)
 export POSTGRES_JDBC_DRIVER=$(consul kv get postgres.jdbc.driver)
 export POSTGRES_JDBC_USER=$(consul kv get postgres.jdbc.user)
@@ -27,6 +28,13 @@ export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \
   --master nomad \
   --deploy-mode client \
+  --conf spark.sql.catalogImplementation=hive \
+  --conf spark.hadoop.datanucleus.autoCreateSchema=true \
+  --conf spark.hadoop.datanucleus.autoCreateTables=true \
+  --conf spark.hadoop.javax.jdo.option.ConnectionURL=${POSTGRES_METASTORE_JDBC_URL} \
+  --conf spark.hadoop.javax.jdo.option.ConnectionDriverName=${POSTGRES_JDBC_DRIVER} \
+  --conf spark.hadoop.javax.jdo.option.ConnectionUserName=${POSTGRES_JDBC_USER} \
+  --conf spark.hadoop.javax.jdo.option.ConnectionPassword=${POSTGRES_JDBC_PASSWORD} \
   --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:${VER}" \
   --conf spark.executor.instances=3 \
   --conf spark.cores.max=6 \
