@@ -8,7 +8,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ua.org.zagoruiko.expenses.spark.etl.loader.StatementLoader;
 import ua.org.zagoruiko.expenses.spark.etl.matcher.GoalsClient;
-import ua.org.zagoruiko.expenses.spark.etl.matcher.MatcherClient;
 import ua.org.zagoruiko.expenses.spark.etl.writer.StatementWriter;
 
 import java.io.Serializable;
@@ -101,7 +100,7 @@ public class ImportPb implements Serializable {
     }
 
     public void run(String[] args) throws Exception {
-        //dumpSpreadsheets();
+        dumpSpreadsheets();
         processAll();
         this.goalsClient.notifyGoals();
     }

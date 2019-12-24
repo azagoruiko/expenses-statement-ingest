@@ -3,13 +3,25 @@ package ua.org.zagoruiko.expenses.spark.etl.loader;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF2;
+import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.api.java.UDF4;
 import org.apache.spark.sql.types.DataTypes;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import scala.Tuple2;
+import ua.org.zagoruiko.expenses.spark.etl.dto.CurrencyRateDTO;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,10 +58,40 @@ public class PbRawStatementLoader implements StatementLoader {
                 (date, time, account, amount) ->
                         String.format("pb-%s-%s-%s-%s", date, time, account, amount);
 
+        UDF3<Float, String, String, Float> currencyToUAH =
+                (rate, currency, date) -> {
+                    if (rate == null) {
+                        String code = "USd";
+                        switch(currency) {
+                            case "долл":
+                                code = "USD";
+                                break;
+                            case "евро":
+                                code = "EUR";
+                                break;
+                        }
+                        String[] dateParts = date.split("\\.");
+                        date = dateParts[2] + dateParts[1] + dateParts[0];
+                        ClientConfig cfg = new ClientConfig();
+                        cfg.register(JacksonJsonProvider.class);
+                        Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
+                        WebTarget target = client.target("https://old.bank.gov.ua/NBUStatService/v1/statdirectory/exchange")
+                                .queryParam("date", date)
+                                .queryParam("valcode", code)
+                                .queryParam("json", "1");
+                        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
+                        List<CurrencyRateDTO> dto = Arrays.asList(ib.get(CurrencyRateDTO[].class));
+                        System.out.println("getting rate from !" + date + " " + code + " " + dto.get(0).getRate());
+                        return dto.get(0).getRate();
+                    }
+                    return rate;
+                };
+
 
         this.spark.sqlContext().udf().register("parseDate", parseDate, DataTypes.TimestampType);
         this.spark.sqlContext().udf().register("parseAccount", parseAccount, DataTypes.StringType);
         this.spark.sqlContext().udf().register("generateId", generateId, DataTypes.StringType);
+        this.spark.sqlContext().udf().register("currencyToUAH", currencyToUAH, DataTypes.FloatType);
     }
 
     @Override
@@ -104,8 +146,8 @@ public class PbRawStatementLoader implements StatementLoader {
         data = data.join( rates, data.col("date").equalTo(rates.col("dt"))
                 .and(rates.col("currency").equalTo(data.col("currency1"))), "left");
         data.registerTempTable("joined");
-        return spark.sql("SELECT *, IF(joined.currency = 'долл' OR joined.currency = 'евро', " +
-                "(amount_currency * rate), amount_currency) as amount " +
+        return spark.sql("SELECT *, IF(currency1 = 'долл' OR currency1 = 'евро', " +
+                "(amount_currency * currencyToUAH(CAST(rate as float), currency1, date)), amount_currency) as amount " +
                 "FROM joined").select(
                 functions.col("id"),
                 functions.col("date_time"),
