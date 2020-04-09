@@ -5,6 +5,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF3;
+import org.apache.spark.sql.api.java.UDF4;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.DataTypes;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,9 @@ public class AlfaRawStatementLoader implements StatementLoader {
 
         UDF1<String, String> cleanFloat = (amount) -> AlfaBank.cleanAmount(amount);
 
-        UDF3<String, String, String, String> generateId =
-                (date, account, amount) ->
-                        String.format("alfa-%s-%s-%s", date, account, amount);
+        UDF4<String, String, String, String, String> generateId =
+                (date, account, amount, desc) ->
+                        String.format("alfa-%s-%s-%s-%s", date, account, amount, desc.hashCode());
 
 
         this.spark.sqlContext().udf().register("parseDateAlfa", parseDate, DataTypes.TimestampType);
@@ -53,7 +54,7 @@ public class AlfaRawStatementLoader implements StatementLoader {
                         .cast(DataTypes.FloatType))
                 .withColumn("amount", functions.col("amount_clean").cast(DataTypes.FloatType))
                 .withColumn("date_time", functions.callUDF("parseDateAlfa", functions.col("Дата операції")))
-                .withColumn("id", functions.callUDF("generateIdAlfa", functions.col("Дата операції"), functions.col("account"), functions.col("Сума")))
+                .withColumn("id", functions.callUDF("generateIdAlfa", functions.col("Дата операції"), functions.col("account"), functions.col("Сума"), functions.col("Призначення")))
 
                 .select(
                         functions.col("id"),
@@ -70,6 +71,7 @@ public class AlfaRawStatementLoader implements StatementLoader {
                         functions.col("amount").as("amount_currency"),
                         functions.col("account").as("account_orig"),
                         functions.lit("none").as("raw_category")
-                        ).dropDuplicates("id");
+                        )
+                ;//.dropDuplicates("id");
     }
 }
