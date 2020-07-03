@@ -73,7 +73,7 @@ public class TaggedArrayStatementWriter implements StatementWriter {
                 .withColumn("category", functions.callUDF("main_category2", functions.concat_ws(",", col("tags"))))
                 .write()
                 .mode(SaveMode.Overwrite)
-                .partitionBy("account").option("path", "s3a://buq/pb_normalized.tagged.array.parq")
+                .partitionBy("account").option("path", "s3a://normalized/pb_normalized.tagged.array.parq")
                 .saveAsTable("pb_normalized_array");
     }
 }

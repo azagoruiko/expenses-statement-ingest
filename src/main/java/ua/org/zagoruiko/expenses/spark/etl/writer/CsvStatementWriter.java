@@ -12,6 +12,6 @@ public class CsvStatementWriter implements StatementWriter {
         dataset.repartition(1)
                 .write().mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .csv("s3a://buq/pb_normalized.csv");
+                .csv("s3a://normalized/pb_normalized.csv");
     }
 }

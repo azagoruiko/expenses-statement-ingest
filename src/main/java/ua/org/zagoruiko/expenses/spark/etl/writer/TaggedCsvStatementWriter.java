@@ -53,6 +53,6 @@ public class TaggedCsvStatementWriter implements StatementWriter {
                 .withColumn("tags", functions.callUDF("category_match", col("operation")))
                 .write().mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .csv("s3a://buq/pb_normalized.tagged.csv");
+                .csv("s3a://normalized/pb_normalized.tagged.csv");
     }
 }

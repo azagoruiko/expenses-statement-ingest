@@ -24,13 +24,13 @@ EOH
 
       config {
         network_mode = "host"
-        extra_hosts = ["nuc1:192.168.0.21", "nuc2:192.168.0.22", "nuc3:192.168.0.23", "master:192.168.0.10", "slave0:192.168.0.11"]
+        extra_hosts = ["nuc1:192.168.0.21", "nuc2:192.168.0.22", "nuc3:192.168.0.23"]
         privileged = true
-        image = "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.7"
+        image = "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.14"
         command = "bash"
         args = [
           "/app/run.sh",
-          "1.0.7",
+          "1.0.14",
         ]
       }
 

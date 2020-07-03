@@ -100,7 +100,7 @@ public class ImportPb implements Serializable {
     }
 
     public void run(String[] args) throws Exception {
-        dumpSpreadsheets();
+        //dumpSpreadsheets();
         processAll();
         this.goalsClient.notifyGoals();
     }
