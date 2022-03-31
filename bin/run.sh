@@ -43,6 +43,5 @@ export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
   --conf spark.nomad.sparkDistribution=local:/opt/spark \
   --conf spark.executor.userClassPathFirst=true \
   --conf spark.driver.userClassPathFirst=true \
-  --conf spark.nomad.job.template=/app/statements-ingest-spark.json \
   --jars local:/opt/spark/jars/gson-2.8.5.jar \
   local:/app/sparkjob.jar
