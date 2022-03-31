@@ -26,7 +26,7 @@
         <dependency>
             <groupId>ua.org.zagoruiko.expenses</groupId>
             <artifactId>matcher-service-core</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
