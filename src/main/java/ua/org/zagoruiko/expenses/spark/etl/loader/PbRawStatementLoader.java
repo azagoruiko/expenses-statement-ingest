@@ -75,7 +75,7 @@ public class PbRawStatementLoader implements StatementLoader {
                         ClientConfig cfg = new ClientConfig();
                         cfg.register(JacksonJsonProvider.class);
                         Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
-                        WebTarget target = client.target("https://old.bank.gov.ua/NBUStatService/v1/statdirectory/exchange")
+                        WebTarget target = client.target("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange")
                                 .queryParam("date", date)
                                 .queryParam("valcode", code)
                                 .queryParam("json", "1");
