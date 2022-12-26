@@ -2,8 +2,8 @@
 
 VER=$1
 
-export NOMAD_ADDR=http://192.168.0.21:4646
-export CONSUL_HTTP_ADDR=192.168.0.21:8500
+export NOMAD_ADDR=http://10.8.0.1:4646
+export CONSUL_HTTP_ADDR=10.8.0.1:8500
 
 export JDBC_URL=$(consul kv get jdbc.url)
 export JDBC_DRIVER=$(consul kv get jdbc.driver)

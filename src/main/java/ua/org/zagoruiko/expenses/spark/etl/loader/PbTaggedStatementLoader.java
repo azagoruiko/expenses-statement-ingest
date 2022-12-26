@@ -48,7 +48,7 @@ public class PbTaggedStatementLoader implements StatementLoader {
                     ClientConfig cfg = new ClientConfig();
                     cfg.register(JacksonJsonProvider.class);
                     Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
-                    WebTarget target = client.target("http://192.168.0.101:8080/matchers/match")
+                    WebTarget target = client.target("http://10.8.0.1:9999/matchers/match")
                             .queryParam("text", operation);
                     Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
                     List<String> data = Arrays.asList(ib.get( String[].class));

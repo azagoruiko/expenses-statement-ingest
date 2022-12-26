@@ -23,11 +23,10 @@
             "User": "",
             "Config": {
               "extra_hosts": [
-                "nuc1:192.168.0.21",
-                "nuc2:192.168.0.22",
-                "nuc3:192.168.0.23",
+                "nuc2:10.8.0.8",
+                "nuc3:10.8.0.6"
               ],
-              "image": "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.18",
+              "image": "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.19",
               "privileged": true
             },
             "Constraints": null,
@@ -80,11 +79,10 @@
             "User": "",
             "Config": {
               "extra_hosts": [
-                "nuc1:192.168.0.21",
-                "nuc2:192.168.0.22",
-                "nuc3:192.168.0.23"
+                "nuc2:10.8.0.8",
+                "nuc3:10.8.0.6"
               ],
-              "image": "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.18",
+              "image": "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.19",
               "privileged": true
             },
             "Constraints": null,
