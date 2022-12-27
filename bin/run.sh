@@ -2,8 +2,8 @@
 
 VER=$1
 
-export NOMAD_ADDR=http://192.168.0.21:4646
-export CONSUL_HTTP_ADDR=192.168.0.21:8500
+export NOMAD_ADDR=http://10.8.0.1:4646
+export CONSUL_HTTP_ADDR=10.8.0.1:8500
 
 export JDBC_URL=$(consul kv get jdbc.url)
 export JDBC_DRIVER=$(consul kv get jdbc.driver)
@@ -23,6 +23,8 @@ export S3_SECRET_KEY=$(consul kv get expenses/object/storage/fs.s3a.secret.key)
 export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_url)
 export SERVICE_GOALS_BASE_URL=$(consul kv get telegram/bot/accounter/goals.base.url)
 export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
+
+echo "Hive metastore URL = ${POSTGRES_METASTORE_JDBC_URL}"
 
 /opt/spark/bin/spark-submit \
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \
@@ -44,4 +46,5 @@ export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
   --conf spark.executor.userClassPathFirst=true \
   --conf spark.driver.userClassPathFirst=true \
   --jars local:/opt/spark/jars/gson-2.8.5.jar \
+  --conf spark.driver.host="10.8.0.6" \
   local:/app/sparkjob.jar
