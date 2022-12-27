@@ -26,11 +26,11 @@ EOH
         network_mode = "host"
         extra_hosts = ["nuc2:10.8.0.8", "nuc3:10.8.0.6"]
         privileged = true
-        image = "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.19"
+        image = "127.0.0.1:9999/docker/expenses-statement-ingest:1.0.21"
         command = "bash"
         args = [
           "/app/run.sh",
-          "1.0.19",
+          "1.0.21",
         ]
       }
 

@@ -24,6 +24,8 @@ export SERVICE_MATCHER_BASE_URL=$(consul kv get expenses/service/matcher/base_ur
 export SERVICE_GOALS_BASE_URL=$(consul kv get telegram/bot/accounter/goals.base.url)
 export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
 
+echo "Hive metastore URL = ${POSTGRES_METASTORE_JDBC_URL}"
+
 /opt/spark/bin/spark-submit \
   --class ua.org.zagoruiko.expenses.spark.etl.ImportPb \
   --master nomad \
@@ -44,4 +46,5 @@ export SERVICE_SPREADSHEETS_BASE_URL=$(consul kv get expenses/google/base_url)
   --conf spark.executor.userClassPathFirst=true \
   --conf spark.driver.userClassPathFirst=true \
   --jars local:/opt/spark/jars/gson-2.8.5.jar \
+  --conf spark.driver.host="10.8.0.6" \
   local:/app/sparkjob.jar
