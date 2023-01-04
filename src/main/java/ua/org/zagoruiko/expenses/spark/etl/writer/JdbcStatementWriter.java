@@ -45,6 +45,7 @@ public class JdbcStatementWriter implements StatementWriter {
         dataset.select(col("id"),
                 col("date_time").as("transaction_date"),
                 col("amount"),
+                col("currency"),
                 col("operation").as("description"),
                 col("category"))
                 .write()

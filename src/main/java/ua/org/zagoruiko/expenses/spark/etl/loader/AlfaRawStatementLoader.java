@@ -14,6 +14,7 @@ import ua.org.zagoruiko.expenses.spark.etl.routines.AlfaBank;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.UUID;
 
 @Service("alfaRawLoader")
 public class AlfaRawStatementLoader implements StatementLoader {
@@ -32,7 +33,7 @@ public class AlfaRawStatementLoader implements StatementLoader {
 
         UDF4<String, String, String, String, String> generateId =
                 (date, account, amount, desc) ->
-                        String.format("alfa-%s-%s-%s-%s", date, account, amount, desc.hashCode());
+                        "alfa-" + UUID.randomUUID();
 
 
         this.spark.sqlContext().udf().register("parseDateAlfa", parseDate, DataTypes.TimestampType);

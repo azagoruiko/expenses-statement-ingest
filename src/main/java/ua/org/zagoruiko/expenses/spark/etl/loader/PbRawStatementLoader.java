@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,17 +57,23 @@ public class PbRawStatementLoader implements StatementLoader {
 
         UDF4<String, String, String, String, String> generateId =
                 (date, time, account, amount) ->
-                        String.format("pb-%s-%s-%s-%s", date, time, account, amount);
+                        "pb-" + UUID.randomUUID();
 
         UDF3<Float, String, String, Float> currencyToUAH =
                 (rate, currency, date) -> {
                     if (rate == null) {
-                        String code = "USd";
+                        String code = currency;
                         switch(currency) {
                             case "долл":
                                 code = "USD";
                                 break;
                             case "евро":
+                                code = "EUR";
+                                break;
+                            case "дол":
+                                code = "USD";
+                                break;
+                            case "євро":
                                 code = "EUR";
                                 break;
                         }
@@ -96,24 +103,6 @@ public class PbRawStatementLoader implements StatementLoader {
 
     @Override
     public Dataset<Row> load() {
-        Dataset<Row> ratesFile = spark.read()
-                .format("csv")
-                .option("quote", "\"")
-                .option("escape", "\"")
-                .option("header", "true")
-                .load("s3a://rates/*.csv");
-        ratesFile.registerTempTable("rates");
-        Dataset<Row> rates = this.spark.sql("SELECT\n" +
-                "          CASE WHEN `Назва валюти`='Євро (EUR)' THEN 'евро'\n" +
-                "               WHEN `Назва валюти`='Долар США (USD)' THEN 'долл'\n" +
-                "               WHEN `Назва валюти`='Російський рубль (RUB)' THEN 'руб'\n" +
-                "               ELSE 'грн'\n" +
-                "          END as currency,\n" +
-                "          (`Офіційний курс` / `Кількість одиниць`) as rate,\n" +
-                "          `Дата` as dt\n" +
-                "          from rates\n" +
-                "   ORDER BY dt"
-                );
         Dataset<Row> data = spark.read()
                 .format("csv")
                 .option("quote", "\"")
@@ -128,33 +117,45 @@ public class PbRawStatementLoader implements StatementLoader {
                 .withColumn("raw_category", functions.trim(functions.col("Категория")))
                 .withColumn("date_time", functions.callUDF("parseDate", functions.col("Дата"), functions.col("Время")))
                 .withColumn("account", functions.callUDF("parseAccount", functions.col("account_orig")))
-                .withColumn("id", functions.callUDF("generateId", functions.col("Дата"), functions.col("Время"), functions.col("account"), functions.col("Сумма в валюте карты")))
+                .withColumn("id",
+                        functions.callUDF("generateId",
+                                functions.col("Дата"),
+                                functions.col("Время"),
+                                functions.col("account"),
+                                functions.col("Сумма в валюте карты")))
                 .select(functions.col("id"),
                         functions.col("date_time"),
                         functions.col("account"),
                         functions.col("amount").as("amount_currency"),
                         functions.col("operation"),
-                        functions.col("Валюта карты").as("currency1"),
+                        functions.col("Валюта карты").as("currency"),
                         functions.lit("pb"),
                         functions.col("Дата").as("date"),
                         functions.col("Время").as("time"),
                         cleanNonPrintable(functions.col("Сумма в валюте карты")).as("amount_orig"),
                         functions.col("amount_clean"),
                         functions.col("account_orig"),
+                        functions.col("amount_clean").as("amount"),
                         functions.trim(functions.col("Категория")).as("raw_category")
                         ).dropDuplicates("id");
-        data = data.join( rates, data.col("date").equalTo(rates.col("dt"))
-                .and(rates.col("currency").equalTo(data.col("currency1"))), "left");
-        data.registerTempTable("joined");
-        return spark.sql("SELECT *, IF(currency1 = 'долл' OR currency1 = 'евро', " +
-                "(amount_currency * currencyToUAH(CAST(rate as float), currency1, date)), amount_currency) as amount " +
-                "FROM joined").select(
+
+        return data.select(
                 functions.col("id"),
                 functions.col("date_time"),
                 functions.col("account"),
                 functions.col("amount"),
                 functions.col("operation"),
-                functions.col("currency"),
+                functions.when(
+                        functions.col("currency").equalTo(functions.lit("дол")), functions.lit("USD")
+                ).when(
+                        functions.col("currency").equalTo(functions.lit("євро")), functions.lit("EUR")
+                ).when(
+                        functions.col("currency").equalTo(functions.lit("долл")), functions.lit("USD")
+                ).when(
+                        functions.col("currency").equalTo(functions.lit("евро")), functions.lit("EUR")
+                ).when(
+                        functions.col("currency").equalTo(functions.lit("грн")), functions.lit("UAH")
+                ).otherwise(functions.col("currency")).as("currency"),
                 functions.lit("pb").as("source"),
                 functions.col("date"),
                 functions.col("time"),

@@ -17,11 +17,12 @@ public class SavedArrayPbStatementLoader implements StatementLoader {
 
     @Override
     public Dataset<Row> load() {
-        return this.spark.table("pb_normalized_array")
+        return this.spark.table("normalized_array")
                 .select("id",
                         "account",
                         "date_time",
                         "amount",
+                        "currency",
                         "operation",
                         "date",
                         "time",
