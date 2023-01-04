@@ -39,6 +39,7 @@ public class SavedPbStatementLoader implements StatementLoader {
                         "account",
                         "date_time",
                         "amount",
+                        "currency",
                         "operation",
                         "date",
                         "time",

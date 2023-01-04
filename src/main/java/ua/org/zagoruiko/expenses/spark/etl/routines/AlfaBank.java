@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 public class AlfaBank implements Serializable {
     public static String cleanAmount(String amount) {
+        if (amount == null) {
+            return "0";
+        }
 
         StringBuilder sb = new StringBuilder();
         boolean decimalFound = false;

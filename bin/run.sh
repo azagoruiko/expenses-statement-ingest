@@ -38,7 +38,7 @@ echo "Hive metastore URL = ${POSTGRES_METASTORE_JDBC_URL}"
   --conf spark.hadoop.javax.jdo.option.ConnectionUserName=${POSTGRES_JDBC_USER} \
   --conf spark.hadoop.javax.jdo.option.ConnectionPassword=${POSTGRES_JDBC_PASSWORD} \
   --conf "spark.nomad.dockerImage=127.0.0.1:9999/docker/expenses-statement-ingest:${VER}" \
-  --conf spark.executor.instances=3 \
+  --conf spark.executor.instances=2 \
   --conf spark.cores.max=6 \
   --conf spark.sql.shuffle.partitions=8 \
   --conf spark.nomad.datacenters=home \
@@ -46,5 +46,4 @@ echo "Hive metastore URL = ${POSTGRES_METASTORE_JDBC_URL}"
   --conf spark.executor.userClassPathFirst=true \
   --conf spark.driver.userClassPathFirst=true \
   --jars local:/opt/spark/jars/gson-2.8.5.jar \
-  --conf spark.driver.host="10.8.0.6" \
   local:/app/sparkjob.jar

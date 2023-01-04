@@ -80,6 +80,7 @@ public class ImportPb implements Serializable {
     public void processAll() {
         Dataset<Row> ds = this.loaders.get("alfaRawLoader").load();
         ds = ds.union(this.loader.load());
+        ds = ds.union(this.loaders.get("csRawLoader").load());
         ds = ds.union(this.loaders.get("spreadsheetsRawLoader").load());
         this.rawWriter.write(ds);
 
