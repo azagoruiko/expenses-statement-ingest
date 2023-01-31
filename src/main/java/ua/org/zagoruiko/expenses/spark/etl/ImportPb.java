@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import ua.org.zagoruiko.expenses.spark.etl.db.DbService;
 import ua.org.zagoruiko.expenses.spark.etl.loader.StatementLoader;
 import ua.org.zagoruiko.expenses.spark.etl.matcher.GoalsClient;
 import ua.org.zagoruiko.expenses.spark.etl.writer.StatementWriter;
@@ -17,6 +18,8 @@ import java.util.Map;
 @PropertySource(value = "classpath:application.properties")
 public class ImportPb implements Serializable {
     public static final long serialVersionUID = 0L;
+    @Autowired
+    DbService dbService;
 
     @Autowired
     GoalsClient goalsClient;
@@ -103,6 +106,7 @@ public class ImportPb implements Serializable {
     public void run(String[] args) throws Exception {
         //dumpSpreadsheets();
         processAll();
+        dbService.refreshTransactionsMaterializedView();
         this.goalsClient.notifyGoals();
     }
 }
