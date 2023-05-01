@@ -52,6 +52,7 @@ public class TaggedCsvStatementWriter implements StatementWriter {
         dataset.repartition(1)
                 .withColumn("tags", functions.callUDF("category_match", col("operation")))
                 .write().mode(SaveMode.Overwrite)
+                .partitionBy("source")
                 .option("header", "true")
                 .csv("s3a://normalized/pb_normalized.tagged.csv");
     }

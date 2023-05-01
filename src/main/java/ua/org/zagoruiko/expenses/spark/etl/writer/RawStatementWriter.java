@@ -11,7 +11,8 @@ public class RawStatementWriter implements StatementWriter {
     public void write(Dataset<Row> dataset) {
         dataset.write()
                 .mode(SaveMode.Overwrite)
-                .partitionBy("account").option("path", "s3a://normalized/pb_normalized.parq")
+                .partitionBy("source")
+                .option("path", "s3a://normalized/pb_normalized.parq")
                 .saveAsTable("pb_normalized");
     }
 }
