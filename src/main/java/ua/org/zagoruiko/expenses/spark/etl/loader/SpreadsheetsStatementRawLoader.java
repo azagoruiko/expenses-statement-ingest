@@ -43,7 +43,7 @@ public class SpreadsheetsStatementRawLoader implements StatementLoader {
         dsToWrite.repartition(1)
                 .write().mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .csv("s3a://spreadsheet.archive/archive.csv");
+                .csv("s3a://spreadsheet.archive/");
 
         return dsToWrite;
     }

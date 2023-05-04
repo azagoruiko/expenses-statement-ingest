@@ -35,12 +35,12 @@ public class SparkConfig {
                 .appName("PB_Statement_CSV_Ingest")
                 .getOrCreate();
 
-        spark.conf().set("spark.executor.userClassPathFirst", "true");
-
         SparkContext sparkContext = spark.sparkContext();
         JavaSparkContext jsc = new JavaSparkContext(sparkContext);
 
         org.apache.hadoop.conf.Configuration conf=jsc.hadoopConfiguration();
+
+        System.out.println(String.format("Setting %s (endpont) to %s", "fs.s3a.endpoint", this.s3Config.getS3Endpoint()));
 
         conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
         conf.set("fs.s3a.endpoint", this.s3Config.getS3Endpoint());

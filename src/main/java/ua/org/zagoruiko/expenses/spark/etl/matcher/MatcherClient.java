@@ -1,6 +1,12 @@
 package ua.org.zagoruiko.expenses.spark.etl.matcher;
 
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -8,13 +14,9 @@ import ua.org.zagoruiko.expenses.matcherservice.dto.CategoryTagDTO;
 import ua.org.zagoruiko.expenses.matcherservice.dto.MatcherSetDTO;
 import ua.org.zagoruiko.expenses.spark.etl.config.MatcherServiceConfig;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -22,37 +24,75 @@ public class MatcherClient {
     private MatcherServiceConfig serviceConfig;
 
     private ClientConfig cfg = new ClientConfig();
-    private Client client;
+    private CloseableHttpClient client;
 
     @Autowired
     public MatcherClient(MatcherServiceConfig serviceConfig) {
         this.serviceConfig = serviceConfig;
-        this.cfg.register(JacksonJsonProvider.class);
-        this.client = ClientBuilder.newBuilder().withConfig(this.cfg).build();
+        this.client = HttpClients.createDefault();
     }
 
     public List<String> getTags(String operation) {
-        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/matchers/match")
-                .queryParam("text", operation);
-        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-        return Arrays.asList(ib.get( String[].class));
+        HttpGet request = new HttpGet(this.serviceConfig.getBaseUrl() + "/matchers/match");
+        try {
+            CloseableHttpResponse response = this.client.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // return it as a String
+                ObjectMapper om = new ObjectMapper();
+                return Arrays.asList(om.readValue(EntityUtils.toString(entity), String[].class));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public MatcherSetDTO getMatchers(String privider) {
-        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/matchers/" + privider);
-        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-        return ib.get( MatcherSetDTO.class);
+        HttpGet request = new HttpGet(this.serviceConfig.getBaseUrl() + "/matchers/" + privider);
+        try {
+            CloseableHttpResponse response = this.client.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // return it as a String
+                ObjectMapper om = new ObjectMapper();
+                return om.readValue(EntityUtils.toString(entity), MatcherSetDTO.class);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public MatcherSetDTO getMatchers() {
-        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/matchers/");
-        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-        return ib.get( MatcherSetDTO.class);
+        HttpGet request = new HttpGet(this.serviceConfig.getBaseUrl() + "/matchers/");
+        try {
+            CloseableHttpResponse response = this.client.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // return it as a String
+                ObjectMapper om = new ObjectMapper();
+                return om.readValue(EntityUtils.toString(entity), MatcherSetDTO.class);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public List<CategoryTagDTO> getCategoryTags() {
-        WebTarget target = client.target(this.serviceConfig.getBaseUrl() + "/tags/categories");
-        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-        return Arrays.asList(ib.get( CategoryTagDTO[].class));
+        HttpGet request = new HttpGet(this.serviceConfig.getBaseUrl() + "/tags/categories");
+        try {
+            CloseableHttpResponse response = this.client.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // return it as a String
+                ObjectMapper om = new ObjectMapper();
+                return Arrays.asList(om.readValue(EntityUtils.toString(entity), CategoryTagDTO[].class));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }
