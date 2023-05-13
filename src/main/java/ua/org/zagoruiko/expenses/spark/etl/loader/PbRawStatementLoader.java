@@ -1,23 +1,26 @@
 package ua.org.zagoruiko.expenses.spark.etl.loader;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.shaded.com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF2;
 import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.api.java.UDF4;
 import org.apache.spark.sql.types.DataTypes;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
 import ua.org.zagoruiko.expenses.spark.etl.dto.CurrencyRateDTO;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -79,17 +82,24 @@ public class PbRawStatementLoader implements StatementLoader {
                         }
                         String[] dateParts = date.split("\\.");
                         date = dateParts[2] + dateParts[1] + dateParts[0];
-                        ClientConfig cfg = new ClientConfig();
-                        cfg.register(JacksonJsonProvider.class);
-                        Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
-                        WebTarget target = client.target("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange")
-                                .queryParam("date", date)
-                                .queryParam("valcode", code)
-                                .queryParam("json", "1");
-                        Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-                        List<CurrencyRateDTO> dto = Arrays.asList(ib.get(CurrencyRateDTO[].class));
-                        System.out.println("getting rate from !" + date + " " + code + " " + dto.get(0).getRate());
-                        return dto.get(0).getRate();
+
+
+                        CloseableHttpClient client = HttpClients.createDefault();
+                        HttpGet request = new HttpGet(String.format("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?date=%s&valcode=%s&json=1", date, code));
+                        try {
+                            CloseableHttpResponse response = client.execute(request);
+                            HttpEntity entity = response.getEntity();
+                            if (entity != null) {
+                                // return it as a String
+                                ObjectMapper om = new ObjectMapper();
+                                List<CurrencyRateDTO> data = Arrays.asList(om.readValue(EntityUtils.toString(entity), CurrencyRateDTO[].class));
+                                System.out.println("getting rate from !" + date + " " + code + " " + data.get(0).getRate());
+                                return data.get(0).getRate();
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
                     }
                     return rate;
                 };

@@ -1,21 +1,24 @@
 package ua.org.zagoruiko.expenses.spark.etl.loader;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.shaded.com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,14 +48,21 @@ public class PbTaggedStatementLoader implements StatementLoader {
 
         UDF3<String, String, String, Tuple2<String, String>> detectCategory =
                 (provider, category, operation) -> {
-                    ClientConfig cfg = new ClientConfig();
-                    cfg.register(JacksonJsonProvider.class);
-                    Client client = ClientBuilder.newBuilder().withConfig(cfg).build();
-                    WebTarget target = client.target("http://10.8.0.1:9999/matchers/match")
-                            .queryParam("text", operation);
-                    Invocation.Builder ib = target.request(MediaType.APPLICATION_JSON);
-                    List<String> data = Arrays.asList(ib.get( String[].class));
-                    return new Tuple2<>("UNKNOWN", String.join(",", data));
+                    CloseableHttpClient client = HttpClients.createDefault();
+                    HttpGet request = new HttpGet("http://10.8.0.1:9999/matchers/match");
+                    try {
+                        CloseableHttpResponse response = client.execute(request);
+                        HttpEntity entity = response.getEntity();
+                        if (entity != null) {
+                            // return it as a String
+                            ObjectMapper om = new ObjectMapper();
+                            List<String> data = Arrays.asList(om.readValue(EntityUtils.toString(entity), String[].class));
+                            return new Tuple2<>("UNKNOWN", String.join(",", data));
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
                 };
 
         List<StructField> fields = new ArrayList<>();

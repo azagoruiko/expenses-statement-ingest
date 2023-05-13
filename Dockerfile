@@ -1,4 +1,4 @@
-FROM 10.8.0.5:9999/docker/spark-nomad-aws-client:test1
+FROM 10.8.0.5:5000/spark-s3:0.0.2
 
 WORKDIR /app
 COPY target/sparkjob-jar-with-dependencies.jar /app/sparkjob.jar

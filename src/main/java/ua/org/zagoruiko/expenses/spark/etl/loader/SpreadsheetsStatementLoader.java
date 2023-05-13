@@ -36,7 +36,7 @@ public class SpreadsheetsStatementLoader implements StatementLoader {
                 .option("quote", "\"")
                 .option("escape", "\"")
                 .option("header", "true")
-                .load("s3a://spreadsheet.archive/archive.csv")
+                .load("s3a://spreadsheet.archive/")
                 .withColumn("date_time", functions.callUDF("parseDateSpreadsheets", functions.col("date")))
                 .withColumn("amount_clean", functions.col("amount"))
                 .withColumn("account", functions.lit("spreadsheets"))
