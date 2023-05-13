@@ -7,7 +7,7 @@ echo "RUNNING MASTER $SPARK_MASTER"
   --master spark://$SPARK_MASTER \
   --deploy-mode client \
   --conf spark.sql.catalogImplementation=hive \
-  --conf spark.hadoop.fs.s3a.path.style.access=true \
+  --conf spark.hadoop.fs.s3a.path.style.access=false \
   --conf spark.hadoop.datanucleus.autoCreateSchema=true \
   --conf spark.hadoop.datanucleus.autoCreateTables=true \
   --conf spark.hadoop.javax.jdo.option.ConnectionURL=${POSTGRES_METASTORE_JDBC_URL} \
