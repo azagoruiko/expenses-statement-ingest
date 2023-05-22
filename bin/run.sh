@@ -16,4 +16,4 @@ echo "RUNNING MASTER $SPARK_MASTER"
   --conf spark.hadoop.javax.jdo.option.ConnectionPassword=${POSTGRES_JDBC_PASSWORD} \
   --conf spark.executor.instances=2 \
   --conf spark.cores.max=6 \
-  https://objectstorage.us-ashburn-1.oraclecloud.com/p/MGjOh9KK3Lotr7uUKKC8VPikPvbjGzWHxNIDrwfjy7hpB4xeYXCNMMO6E_uGz_T8/n/idnbbkjxiqcc/b/jars/o/expenses.jar
+  https://objectstorage.us-ashburn-1.oraclecloud.com/p/guubWq7i7JaZ-tHlGjnbbi9auvnmxK1by4bcEJ122nLEJo7IcnqcicqTpcWWpWR7/n/idnbbkjxiqcc/b/jars/o/expenses.jar
