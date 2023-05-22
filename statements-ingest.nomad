@@ -53,11 +53,11 @@ EOH
         network_mode = "host"
         extra_hosts = ["nuc2:10.8.0.8", "nuc3:10.8.0.6", "nuc1:10.8.0.9", "vm1:10.8.0.2"]
         privileged = true
-        image = "10.8.0.5:5000/expenses-statement-ingest:2.0.48"
+        image = "10.8.0.5:5000/expenses-statement-ingest:2.0.49"
         command = "bash"
         args = [
           "/app/run.sh",
-          "2.0.48",
+          "2.0.49",
         ]
       }
 
