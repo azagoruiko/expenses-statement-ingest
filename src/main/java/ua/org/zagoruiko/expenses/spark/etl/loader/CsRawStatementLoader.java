@@ -70,7 +70,8 @@ public class CsRawStatementLoader implements StatementLoader {
                         functions.lit("Message for me: "),         functions.coalesce(functions.col("Message for me"), functions.lit("null!")),        functions.lit("; "),
                         functions.lit("Message for recipient: "),  functions.coalesce(functions.col("Message for recipient"), functions.lit("null!")), functions.lit("; "),
                         functions.lit("Category: "),               functions.coalesce(functions.col("Category"), functions.lit("null!")),              functions.lit("; "),
-                        functions.lit("Card Location: "),          functions.coalesce(functions.col("Card Location"), functions.lit("null!")),         functions.lit("; ")
+                        functions.lit("Card Location: "),          functions.coalesce(functions.col("Card Location"), functions.lit("null!")),         functions.lit("; "),
+                        functions.lit("Note: "),          functions.coalesce(functions.col("Note"), functions.lit("null!")),         functions.lit("; ")
                 ))
 
                 .withColumn("currency", functions.col("Currency"))
