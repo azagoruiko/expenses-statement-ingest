@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Service("csRawLoader")
@@ -55,13 +56,17 @@ public class CsRawStatementLoader implements StatementLoader {
         // "Message for recipient",
         // "Note","Category",
         // "Card Location"
-        return spark.read()
+        Dataset<Row> dataset = spark.read()
                 .format("csv")
                 .option("quote", "\"")
                 //.option("escape", "\"")
                 .option("header", "true")
                 .option("encoding", "UTF-8")
-                .load("s3a://raw.cs.statements/*.csv")
+                .load("s3a://raw.cs.statements/*.csv");
+        if (!Arrays.stream(dataset.columns()).anyMatch(x -> x.equals("Note"))) {
+            dataset = dataset.withColumn("Note", functions.lit(""));
+        }
+        return dataset
                 .withColumn("account", functions.col("Own Account Number"))
                 .withColumn("operation", functions.concat(
                         functions.lit("Partner Name: "),           functions.coalesce(functions.col("Partner Name"), functions.lit("null!")),          functions.lit("; "),
@@ -71,7 +76,7 @@ public class CsRawStatementLoader implements StatementLoader {
                         functions.lit("Message for recipient: "),  functions.coalesce(functions.col("Message for recipient"), functions.lit("null!")), functions.lit("; "),
                         functions.lit("Category: "),               functions.coalesce(functions.col("Category"), functions.lit("null!")),              functions.lit("; "),
                         functions.lit("Card Location: "),          functions.coalesce(functions.col("Card Location"), functions.lit("null!")),         functions.lit("; "),
-                        functions.lit("Note: "),          functions.coalesce(functions.col("Note"), functions.lit("null!")),         functions.lit("; ")
+                        functions.lit("Note: "),                   functions.coalesce(functions.col("Note"), functions.lit("null!")),                  functions.lit("; ")
                 ))
 
                 .withColumn("currency", functions.col("Currency"))
