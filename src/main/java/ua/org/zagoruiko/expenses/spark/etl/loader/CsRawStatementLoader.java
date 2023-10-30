@@ -63,9 +63,7 @@ public class CsRawStatementLoader implements StatementLoader {
                 .option("header", "true")
                 .option("encoding", "UTF-8")
                 .load("s3a://raw.cs.statements/*.csv");
-        if (!Arrays.stream(dataset.columns()).anyMatch(x -> x.equals("Note"))) {
-            dataset = dataset.withColumn("Note", functions.lit(""));
-        }
+
         return dataset
                 .withColumn("account", functions.col("Own Account Number"))
                 .withColumn("operation", functions.concat(
