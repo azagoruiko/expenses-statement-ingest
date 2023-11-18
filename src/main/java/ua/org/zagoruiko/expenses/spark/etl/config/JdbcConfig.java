@@ -42,7 +42,7 @@ public class JdbcConfig {
         return jdbcPassword;
     }
 
-    @Bean
+    @Bean(name = "mysqlDataSource")
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(this.jdbcDriver);

@@ -1,6 +1,7 @@
 package ua.org.zagoruiko.expenses.spark.etl.db;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -12,7 +13,7 @@ public class DbServiceImpl implements DbService {
 
     private static final String SQL_REFRESH_TRANSACTION_MATERIALIZED_VIEW = "REFRESH MATERIALIZED VIEW expenses.multicurrency_transactions";
 
-    public DbServiceImpl(@Autowired DataSource dataSource) {
+    public DbServiceImpl(@Autowired @Qualifier("pgDataSource") DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
