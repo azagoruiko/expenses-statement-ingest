@@ -106,7 +106,7 @@ public class ImportPb implements Serializable {
     public void run(String[] args) throws Exception {
         //dumpSpreadsheets();
         processAll();
-        //dbService.refreshTransactionsMaterializedView();
+        dbService.refreshTransactionsMaterializedView();
         this.goalsClient.notifyGoals();
     }
 }

@@ -13,4 +13,4 @@ echo "RUNNING MASTER $SPARK_MASTER"
   --conf spark.hadoop.javax.jdo.option.ConnectionDriverName=${POSTGRES_JDBC_DRIVER} \
   --conf spark.hadoop.javax.jdo.option.ConnectionUserName=${POSTGRES_JDBC_USER} \
   --conf spark.hadoop.javax.jdo.option.ConnectionPassword=${POSTGRES_JDBC_PASSWORD} \
-  $S3_SHARED_BUCKET/expenses.jar
+  local:/app/sparkjob.jar
