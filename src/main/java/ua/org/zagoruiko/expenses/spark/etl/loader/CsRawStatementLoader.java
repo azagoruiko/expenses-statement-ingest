@@ -100,7 +100,7 @@ public class CsRawStatementLoader implements StatementLoader {
                         functions.col("amount").as("amount_clean"),
                         functions.col("amount").as("amount_currency"),
                         functions.col("account").as("account_orig"),
-                        functions.lit("Category").as("raw_category")
+                        functions.col("Category").as("raw_category")
                         )
                 ;//.dropDuplicates("id");
     }
