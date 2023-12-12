@@ -15,17 +15,17 @@ public class DbServiceImpl implements DbService {
             "create table expenses.multicurrency_transactions as\n" +
             "SELECT\n" +
             "    t.id,\n" +
-            "    t.transaction_date,\n" +
+            "    date_trunc('day'::text, t.transaction_date) as transaction_date,\n" +
             "    t.amount,\n" +
             "    t.description,\n" +
             "    t.tags,\n" +
             "    t.category,\n" +
             "    t.currency,\n" +
-            "    t.amount / coalesce(r_eur.rate, (SELECT rrr.rate from expenses.rates rrr WHERE rrr.date <= date_trunc('day'::text, t.transaction_date) and rrr.asset='EUR' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) eur_amount,\n" +
-            "    t.amount / coalesce(r_usd.rate, (SELECT rrr.rate from expenses.rates rrr WHERE rrr.date <= date_trunc('day'::text, t.transaction_date) and rrr.asset='USD' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) usd_amount,\n" +
-            "    t.amount / coalesce(r_czk.rate, (SELECT rrr.rate from expenses.rates rrr WHERE rrr.date <= date_trunc('day'::text, t.transaction_date) and rrr.asset='CZK' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) czk_amount,\n" +
-            "    t.amount / coalesce(r_uah.rate, (SELECT rrr.rate from expenses.rates rrr WHERE rrr.date <= date_trunc('day'::text, t.transaction_date) and rrr.asset='UAH' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) uah_amount,\n" +
-            "    t.amount / coalesce(r_btc.rate, (SELECT rrr.rate from expenses.rates rrr WHERE rrr.date <= date_trunc('day'::text, t.transaction_date) and rrr.asset='BTC' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) btc_amount\n" +
+            "    t.amount / coalesce(r_eur.rate, (SELECT rrr.rate from expenses.rates rrr WHERE date_trunc('day'::text, rrr.date) <= date_trunc('day'::text, t.transaction_date) and rrr.asset='EUR' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) eur_amount,\n" +
+            "    t.amount / coalesce(r_usd.rate, (SELECT rrr.rate from expenses.rates rrr WHERE date_trunc('day'::text, rrr.date) <= date_trunc('day'::text, t.transaction_date) and rrr.asset='USD' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) usd_amount,\n" +
+            "    t.amount / coalesce(r_czk.rate, (SELECT rrr.rate from expenses.rates rrr WHERE date_trunc('day'::text, rrr.date) <= date_trunc('day'::text, t.transaction_date) and rrr.asset='CZK' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) czk_amount,\n" +
+            "    t.amount / coalesce(r_uah.rate, (SELECT rrr.rate from expenses.rates rrr WHERE date_trunc('day'::text, rrr.date) <= date_trunc('day'::text, t.transaction_date) and rrr.asset='UAH' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) uah_amount,\n" +
+            "    t.amount / coalesce(r_btc.rate, (SELECT rrr.rate from expenses.rates rrr WHERE date_trunc('day'::text, rrr.date) <= date_trunc('day'::text, t.transaction_date) and rrr.asset='BTC' AND rrr.quote = t.currency order by rrr.date DESC limit 1)) btc_amount\n" +
             "from expenses.transactions t\n" +
             "         left join expenses.rates r_eur\n" +
             "                   ON r_eur.date = date_trunc('day'::text, t.transaction_date)\n" +
@@ -41,17 +41,7 @@ public class DbServiceImpl implements DbService {
             "                       AND t.currency = r_uah.quote and r_uah.asset = 'UAH'\n" +
             "         left join expenses.rates r_btc\n" +
             "                   ON r_btc.date = date_trunc('day'::text, t.transaction_date)\n" +
-            "                       AND t.currency = r_btc.quote and r_btc.asset = 'BTC';\n" +
-            "\n" +
-            "\n" +
-            "create index if not exists category_idx\n" +
-            "    on expenses.multicurrency_transactions (category);\n" +
-            "\n" +
-            "create index if not exists currency_idx\n" +
-            "    on expenses.multicurrency_transactions (currency);\n" +
-            "\n" +
-            "create index if not exists tags_idx\n" +
-            "    on expenses.multicurrency_transactions (tags);";
+            "                       AND t.currency = r_btc.quote and r_btc.asset = 'BTC';";
 
     public DbServiceImpl(@Autowired @Qualifier("pgDataSource") DataSource dataSource) {
         this.dataSource = dataSource;
