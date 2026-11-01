@@ -1,5 +1,5 @@
 job "statements-ingest" {
-  datacenters = ["home"]
+  datacenters = ["dc1"]
   type        = "batch"
 
   periodic {
@@ -53,17 +53,17 @@ EOH
         network_mode = "host"
         extra_hosts = ["nuc2:10.8.0.8", "nuc3:10.8.0.6", "nuc1:10.8.0.9", "vm1:10.8.0.2"]
         privileged = true
-        image = "10.8.0.5:5000/expenses-statement-ingest:2.0.57"
+        image = "docker-registry.service.consul:5001/expenses-statement-ingest:0.0.1"
         command = "bash"
         args = [
           "/app/run.sh",
-          "2.0.57",
+          "0.0.1",
         ]
       }
 
       resources {
         cpu    = 1500
-        memory = 1500
+        memory = 3500
       }
     }
   }
